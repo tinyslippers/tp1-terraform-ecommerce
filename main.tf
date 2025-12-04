@@ -18,7 +18,7 @@ variable "service_name" {
 variable "external_port" {
   type        = number
   description = "Port exposé sur la machine hôte"
-  default     = 8081
+  default     = 8082
 }
 
 resource "docker_network" "ecommerce" {
@@ -49,7 +49,25 @@ resource "docker_container" "service" {
   ]
 }
 
+resource "docker_container" "cart" {
+  name  = "cart-service"
+  image = docker_image.service.image_id
+
+  networks_advanced {
+    name = docker_network.ecommerce.name
+  }
+
+  ports {
+    internal = 80
+    external = 8083
+  }
+
+  env = [
+    "SERVICE_NAME=cart",
+    "ENVIRONMENT=dev"
+  ]
+}
+
 output "service_url" {
   value = "http://localhost:${var.external_port}"
 }
-
